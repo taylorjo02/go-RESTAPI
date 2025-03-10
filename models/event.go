@@ -58,7 +58,7 @@ func GetAllEvents() ([]Event, error) {
 
 	for rows.Next() {
 		var event Event
-		err := rows.Scan(&event.ID, &event.Name, &event.Description, &event.Description, &event.DateTime, &event.UserID)
+		err := rows.Scan(&event.ID, &event.Name, &event.Description, &event.Location, &event.DateTime, &event.UserID)
 
 		if err != nil {
 			return nil, err
@@ -75,10 +75,30 @@ func GetEventByID(id int64) (*Event, error) {
 	row := db.DB.QueryRow(query, id)
 
 	var event Event
-	err := row.Scan(&event.ID, &event.Name, &event.Description, &event.Description, &event.DateTime, &event.UserID)
+	err := row.Scan(&event.ID, &event.Name, &event.Description, &event.Location, &event.DateTime, &event.UserID)
 	if err != nil {
 		return nil, err
 	}
 
 	return &event, nil
+}
+
+func (e Event) Update() error {
+	query := `
+	UPDATE events
+	SET name = ?, description = ?, location = ?, dateTime = ?
+	WHERE id = ?
+	`
+
+	statement, err := db.DB.Prepare(query)
+
+	if err != nil {
+		return err
+	}
+
+	defer statement.Close()
+
+	_, err = statement.Exec(e.Name, e.Description, e.Location, e.DateTime, e.ID)
+	return err
+
 }
