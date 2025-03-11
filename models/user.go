@@ -1,6 +1,9 @@
 package models
 
-import "github.com/taylorjo02/go-RESTAPI/db"
+import (
+	"github.com/taylorjo02/go-RESTAPI/db"
+	"github.com/taylorjo02/go-RESTAPI/utils"
+)
 
 type User struct {
 	ID       int64
@@ -18,7 +21,12 @@ func (u User) Save() error {
 
 	defer statement.Close()
 
-	result, err := statement.Exec(u.Email, u.Password)
+	hashedPass, err := utils.HashPassword(u.Password)
+	if err != nil {
+		return err
+	}
+
+	result, err := statement.Exec(u.Email, hashedPass)
 	if err != nil {
 		return err 
 	}
